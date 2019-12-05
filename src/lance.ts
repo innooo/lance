@@ -22,7 +22,7 @@ function formatRequestHeaders(config: LanceRequestConfig): any {
 
 function formatResponseData(response: LanceResponse): LanceResponse {
   const { data } = response
-  response.data = transformResponseData(data)
+  return transformResponseData(data)
 }
 
 function seriesUrl(config: LanceRequestConfig): string {
@@ -33,7 +33,7 @@ function seriesUrl(config: LanceRequestConfig): string {
 function lance(config: LanceRequestConfig): LanceResponsePromise {
   processConfig(config)
   return xhr(config).then(res => {
-    formatResponseData(res)
+    res.data = formatResponseData(res)
     return res
   })
 }

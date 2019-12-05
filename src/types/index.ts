@@ -21,6 +21,7 @@ export interface LanceRequestConfig {
   params?: any
   headers?: any
   responseType?: XMLHttpRequestResponseType // 返回数据类型
+  timeout?: number
 }
 
 export interface LanceResponse {
@@ -33,3 +34,11 @@ export interface LanceResponse {
 }
 
 export interface LanceResponsePromise extends Promise<LanceResponse> {}
+
+export interface LanceResponseError extends Error {
+  config: LanceRequestConfig
+  isLanceError: boolean
+  request?: any
+  response?: LanceResponse
+  code?: string | null
+}

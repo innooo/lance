@@ -74,6 +74,7 @@ function registerBaseRouter () {
       res.json(buf.toJSON())
     })
   })
+
 }
 
 function registerErrorRouter () {

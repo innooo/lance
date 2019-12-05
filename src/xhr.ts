@@ -1,4 +1,5 @@
-import { LanceRequestConfig, LanceResponsePromise } from './types'
+import { LanceRequestConfig, LanceResponsePromise, LanceResponse } from './types'
+import { createError } from './helpers/error'
 
 function formatHeaders(headers: string): any {
   const formatedHeaders = Object.create(null)
@@ -13,12 +14,20 @@ function formatHeaders(headers: string): any {
   return formatedHeaders
 }
 function xhr(config: LanceRequestConfig): LanceResponsePromise {
-  const { url, method = 'get', data = null, headers, responseType } = config
+  const { url, method = 'get', data = null, headers, responseType, timeout } = config
   const request = new XMLHttpRequest()
   if (responseType) {
     request.responseType = responseType
   }
+
   return new Promise((resolve, reject) => {
+    function resolveResponse(response: LanceResponse): void {
+      if (response.status < 200 || response.status > 300) {
+        reject(createError('Response Error', config, null, request, response))
+      } else {
+        resolve(response)
+      }
+    }
     request.open(method.toUpperCase(), url, true)
     // 设置请求头
     Object.keys(headers).forEach(name => {
@@ -30,20 +39,36 @@ function xhr(config: LanceRequestConfig): LanceResponsePromise {
       }
     })
 
+    if (timeout) {
+      request.timeout = timeout
+    }
+
+    request.ontimeout = function timeoutFunc(): void {
+      reject(createError(`Timeout of ${timeout} ms`, config, 'ECONNABORTED', request))
+    }
+
+    request.onerror = function errorFunc(): void {
+      reject(createError('Network Error', config, null, request))
+    }
+
     request.onreadystatechange = function stateFunc(): void {
-      if (request.readyState !== 4) {
-        return
-      }
+      if (request.readyState !== 4) return
+
+      if (request.status === 0) return
+
       const responseHeaders = request.getAllResponseHeaders() // response header
       const responseData = responseType === 'text' ? request.responseText : request.response // response data
-      resolve({
+
+      const response: LanceResponse = {
         data: responseData,
         status: request.status,
         statusText: request.statusText,
         headers: formatHeaders(responseHeaders),
         config,
         request
-      })
+      }
+
+      resolveResponse(response)
     }
     request.send(data)
   })
