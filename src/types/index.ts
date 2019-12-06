@@ -15,7 +15,7 @@ type Method =
   | 'put'
 
 export interface LanceRequestConfig {
-  url: string
+  url?: string
   method?: Method
   data?: any
   params?: any
@@ -41,4 +41,29 @@ export interface LanceResponseError extends Error {
   request?: any
   response?: LanceResponse
   code?: string | null
+}
+/**
+ * request
+ * get
+ * delete
+ * head
+ * options
+ * post
+ * put
+ * patch
+ */
+export interface Lance {
+  request(config: LanceRequestConfig): LanceResponsePromise
+  get(url: string, config?: LanceRequestConfig): LanceResponsePromise
+  delete(url: string, config?: LanceRequestConfig): LanceResponsePromise
+  head(url: string, config?: LanceRequestConfig): LanceResponsePromise
+  options(url: string, config?: LanceRequestConfig): LanceResponsePromise
+  post(url: string, data?: any, config?: LanceRequestConfig): LanceResponsePromise
+  put(url: string, data?: any, config?: LanceRequestConfig): LanceResponsePromise
+  patch(url: string, data?: any, config?: LanceRequestConfig): LanceResponsePromise
+}
+
+export interface LanceInstance extends Lance {
+  (config: LanceRequestConfig): LanceResponsePromise
+  (url: string, config?: LanceRequestConfig): LanceResponsePromise
 }

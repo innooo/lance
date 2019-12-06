@@ -1,5 +1,5 @@
-import { LanceRequestConfig, LanceResponsePromise, LanceResponse } from './types'
-import { createError } from './helpers/error'
+import { LanceRequestConfig, LanceResponsePromise, LanceResponse } from '../types'
+import { createError } from '../helpers/error'
 
 function formatHeaders(headers: string): any {
   const formatedHeaders = Object.create(null)
@@ -28,7 +28,7 @@ function xhr(config: LanceRequestConfig): LanceResponsePromise {
         resolve(response)
       }
     }
-    request.open(method.toUpperCase(), url, true)
+    request.open(method.toUpperCase(), url!, true)
     // 设置请求头
     Object.keys(headers).forEach(name => {
       if (data === null && name.toLowerCase() === 'content-type') {
