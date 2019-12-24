@@ -42,3 +42,31 @@ lance('/extend/post', {
     msg: 'post'
   }
 })
+
+interface ResponseData <T = any>{
+  code: number
+  result: T
+  message: string
+}
+
+interface User {
+  name: string
+  age: number
+}
+
+function getUser<T>() {
+  return lance<ResponseData<User>>({
+    url: '/extend/user'
+  })
+  .then(res => res.data)
+  .catch(err => console.error(err))
+}
+
+async function test<User>() {
+  const user = await getUser()
+  if (user) {
+    console.log('zzz', user.result.name)
+  }
+}
+
+test()

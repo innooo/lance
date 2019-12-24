@@ -1,7 +1,31 @@
-import { LanceRequestConfig, LanceResponsePromise } from '../types'
+import {
+  LanceRequestConfig,
+  LanceResponsePromise,
+  LanceResponse,
+  ResolveFn,
+  RejectFn
+} from '../types'
+import InterceptorManager from './InterceptorManager'
 import dispatchRequest from './dispatchRequest'
 
+interface Interceptors {
+  request: InterceptorManager<LanceRequestConfig>
+  response: InterceptorManager<LanceResponse>
+}
+
+interface RequestPromiseChain<T> {
+  resolve: ResolveFn<T> | ((config: LanceRequestConfig) => LanceResponsePromise)
+  reject?: RejectFn
+}
+
 export default class Lance {
+  interceptors: Interceptors
+  constructor() {
+    this.interceptors = {
+      request: new InterceptorManager<LanceRequestConfig>(),
+      response: new InterceptorManager<LanceResponse>()
+    }
+  }
   request(url: any, config?: any): LanceResponsePromise {
     if (typeof url === 'string') {
       if (!config) {
@@ -11,7 +35,30 @@ export default class Lance {
     } else {
       config = url
     }
-    return dispatchRequest(config)
+
+    const chain: RequestPromiseChain<any>[] = [
+      {
+        resolve: dispatchRequest,
+        reject: undefined
+      }
+    ]
+
+    let P = Promise.resolve(config)
+
+    this.interceptors.request.forEach(interceptor => {
+      chain.unshift(interceptor)
+    })
+
+    this.interceptors.response.forEach(interceptor => {
+      chain.push(interceptor)
+    })
+
+    while (chain.length) {
+      const { resolve, reject } = chain.shift()!
+      P = P.then(resolve, reject)
+    }
+
+    return P
   }
   get(url: string, config?: LanceRequestConfig): LanceResponsePromise {
     return this.request(

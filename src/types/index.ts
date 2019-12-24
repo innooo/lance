@@ -24,8 +24,8 @@ export interface LanceRequestConfig {
   timeout?: number
 }
 
-export interface LanceResponse {
-  data: any
+export interface LanceResponse<T = any> {
+  data: T
   status: number
   statusText: string
   headers: any
@@ -33,7 +33,7 @@ export interface LanceResponse {
   request: any
 }
 
-export interface LanceResponsePromise extends Promise<LanceResponse> {}
+export interface LanceResponsePromise<T = any> extends Promise<LanceResponse<T>> {}
 
 export interface LanceResponseError extends Error {
   config: LanceRequestConfig
@@ -53,17 +53,34 @@ export interface LanceResponseError extends Error {
  * patch
  */
 export interface Lance {
-  request(config: LanceRequestConfig): LanceResponsePromise
-  get(url: string, config?: LanceRequestConfig): LanceResponsePromise
-  delete(url: string, config?: LanceRequestConfig): LanceResponsePromise
-  head(url: string, config?: LanceRequestConfig): LanceResponsePromise
-  options(url: string, config?: LanceRequestConfig): LanceResponsePromise
-  post(url: string, data?: any, config?: LanceRequestConfig): LanceResponsePromise
-  put(url: string, data?: any, config?: LanceRequestConfig): LanceResponsePromise
-  patch(url: string, data?: any, config?: LanceRequestConfig): LanceResponsePromise
+  interceptors: {
+    request: LanceInterceptorManger<LanceRequestConfig>
+    response: LanceInterceptorManger<LanceResponse>
+  }
+  request<T = any>(config: LanceRequestConfig): LanceResponsePromise<T>
+  get<T = any>(url: string, config?: LanceRequestConfig): LanceResponsePromise<T>
+  delete<T = any>(url: string, config?: LanceRequestConfig): LanceResponsePromise<T>
+  head<T = any>(url: string, config?: LanceRequestConfig): LanceResponsePromise<T>
+  options<T = any>(url: string, config?: LanceRequestConfig): LanceResponsePromise<T>
+  post<T = any>(url: string, data?: any, config?: LanceRequestConfig): LanceResponsePromise<T>
+  put<T = any>(url: string, data?: any, config?: LanceRequestConfig): LanceResponsePromise<T>
+  patch<T = any>(url: string, data?: any, config?: LanceRequestConfig): LanceResponsePromise<T>
 }
 
 export interface LanceInstance extends Lance {
-  (config: LanceRequestConfig): LanceResponsePromise
-  (url: string, config?: LanceRequestConfig): LanceResponsePromise
+  <T = any>(config: LanceRequestConfig): LanceResponsePromise<T>
+  <T = any>(url: string, config?: LanceRequestConfig): LanceResponsePromise<T>
+}
+
+export interface ResolveFn<T = any> {
+  (val: T): T | Promise<T>
+}
+
+export interface RejectFn {
+  (error: any): any
+}
+
+export interface LanceInterceptorManger<T> {
+  use(resolve: ResolveFn<T>, reject?: RejectFn): number
+  eject?(id: number): void
 }

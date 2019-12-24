@@ -1,6 +1,7 @@
 import { LanceRequestConfig, LanceResponsePromise, LanceResponse } from '../types'
 import { createError } from '../helpers/error'
 
+// 将响应header格式化为json对象
 function formatHeaders(headers: string): any {
   const formatedHeaders = Object.create(null)
   if (!headers) return formatHeaders
@@ -67,7 +68,6 @@ function xhr(config: LanceRequestConfig): LanceResponsePromise {
         config,
         request
       }
-
       resolveResponse(response)
     }
     request.send(data)
